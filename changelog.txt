@@ -1,9 +1,18 @@
 # 更新日志
 
+## 1.5
+- [src] extract_bag_md5s.py中支持增量修改bag.json，且bag.json预留 trigger_time 字段
+- [src] BenchICT_Config.py增加对bag.json存在md5但是不存在trigger time错误修正
+
+## 1.4
+
+- [src] BenchICT_Config.py 中增加对 bag.json 中不存在的 bag_md5 错误修正
+- [src] 使用默认的 trigger time 逻辑移除
+
 ## 1.3
   
-- [src]生成config、修改config、提取md5的三个 Python 小工具已经支持相对路径
-- [src]相对路径为 BenchICT_Scripts，增加工具的移植性与拓展性
+- [src] 生成config、修改config、提取md5的三个 Python 小工具已经支持相对路径
+- [src] 相对路径为 BenchICT_Scripts，增加工具的移植性与拓展性
 
 ## 1.2
 
