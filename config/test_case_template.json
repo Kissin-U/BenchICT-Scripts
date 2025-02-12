@@ -1,0 +1,70 @@
+{
+  "paths": {
+    "CASE_LIST_JSON": "../function_spec/BYUNS/case_set/case_list.json",
+    "YAML_DIR": "../function_spec/BYUNS/case_set",
+    "BASE_PATH": "../function_spec/BYUNS/cases",
+    "OUTPUT_DIR": "output",
+    "LOG_DIR": "log",
+    "BAG_JSON_PATH": "config/bag.json"
+  },
+  "test_case_template": {
+    "project_code": "BYUNS",
+    "car_type": "A19X",
+    "test_suite_info": {
+      "suite_code": "BENCHICT_TEST",
+      "test_case_infos": [
+        {
+          "case_code": "<CASE_CODE>",
+          "feature_code": "module_maf_mff_hmi",
+          "times": 1,
+          "checker_infos": [
+            {
+              "checker_code": "stab_process_crash_with_coredump_checker",
+              "is_jump": false,
+              "is_only_display": false,
+              "data": {}
+            },
+            {
+              "checker_code": "func_mfl_simulator_checker",
+              "is_jump": false,
+              "is_only_display": false,
+              "data": {}
+            }
+          ],
+          "bag_urls": ["<BAG_MD5>"],
+          "calib_url": "",
+          "ground_truth_url": "",
+          "config": {
+            "ct_player_use": true,
+            "bag_type": "rosbag",
+            "ct_mock_loc": true,
+            "function_toolchain": {
+              "source": "git",
+              "branch": "master"
+            },
+            "upload_bag_flag": true,
+            "topic_remaps": "<TOPIC_REMAPS>",
+            "function_simulator": {
+              "mproto": 1,
+              "input_topic_list": "<INPUT_TOPIC_LIST>",
+              "output_topic_list": "<OUTPUT_TOPIC_LIST>"
+            }
+          },
+          "mfl_function_spec": {
+            "spec_names": [
+              {
+                "path": "<MFL_CASE_PATH>",
+                "extend_path": "<MFL_EXTEND_PATH>",
+                "is_simulator": true,
+                "trigger_time": "<TRIGGER_TIME>",
+                "optional": false
+              }
+            ],
+            "source": "git",
+            "branch": "mff_hmi_main_check"
+          }
+        }
+      ]
+    }
+  }
+}

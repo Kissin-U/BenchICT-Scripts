@@ -1,0 +1,14 @@
+# 更新日志
+
+## 1.3
+  
+- [src]生成config、修改config、提取md5的三个 Python 小工具已经支持相对路径
+- [src]相对路径为 BenchICT_Scripts，增加工具的移植性与拓展性
+
+## 1.2
+
+- [src] 三个工具，即生成config、修改config、提取md5改为 Python
+
+## 1.1
+
+- [src] 生成四个工具，shell 脚本
