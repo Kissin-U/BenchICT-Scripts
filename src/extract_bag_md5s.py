@@ -37,6 +37,11 @@ class BagMD5Extractor:
                 # 对于其他路径，假设它们是相对于 BenchICT_Scripts 目录的
                 self.paths[key] = os.path.normpath(os.path.join(self.bench_ict_dir, path))
         
+        # 设置 BAG_JSON_PATH 和 OUTPUT_JSON
+        self.BAG_JSON_PATH = self.paths.get('BAG_JSON_PATH')
+        if not self.BAG_JSON_PATH:
+            logging.warning("BAG_JSON_PATH is not defined in the configuration file")
+        
         self.TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.OUTPUT_JSON = os.path.join(self.paths['OUTPUT_DIR'], "bag.json")
         self.LOG_FILE = os.path.join(self.paths['LOG_DIR'], f"extract_bag_md5s_{self.TIMESTAMP}.txt")
@@ -55,17 +60,25 @@ class BagMD5Extractor:
     def process(self):
         try:
             logging.info("Script execution started")
+            print("Script execution started")
             
-            # 检查case_list.json文件是否存在
             if not os.path.exists(self.paths['CASE_LIST_JSON']):
                 raise FileNotFoundError(f"The {self.paths['CASE_LIST_JSON']} file does not exist.")
 
-            # 从case_list.json中读取YAML文件列表并处理
+            # 读取现有的 bag.json 文件（如果存在）
+            existing_bags = {}
+            if self.BAG_JSON_PATH and os.path.exists(self.BAG_JSON_PATH):
+                with open(self.BAG_JSON_PATH, 'r') as infile:
+                    existing_data = json.load(infile)
+                    for bag in existing_data.get('bags', []):
+                        existing_bags[bag['md5']] = bag
+
             with open(self.paths['CASE_LIST_JSON'], 'r') as file:
                 case_list = json.load(file)['case_list']
 
-            unique_md5s = set()
+            new_bags = []
             logging.info("Starting to process YAML files:")
+            print("Starting to process YAML files:")
             for yaml_file in case_list:
                 full_path = os.path.join(self.paths['YAML_DIR'], yaml_file)
                 logging.info(f"Processing file: {full_path}")
@@ -74,18 +87,29 @@ class BagMD5Extractor:
                         for line in file:
                             if line.startswith('bag_md5:'):
                                 md5 = line.split(':')[1].strip()
-                                logging.info(f"Found bag_md5: {md5}")
-                                unique_md5s.add(md5)
+                                if md5 not in existing_bags:
+                                    new_bag = {"md5": md5, "trigger_time": "None"}
+                                    existing_bags[md5] = new_bag
+                                    new_bags.append(new_bag)
+                                    logging.info(f"Found new bag_md5: {md5}")
+                                    print(f"Found new bag_md5: {md5}")
+                                else:
+                                    logging.info(f"Found existing bag_md5: {md5}")
                                 break
                 else:
                     logging.warning(f"Warning: The file {full_path} does not exist.")
+                    print(f"Warning: The file {full_path} does not exist.")
+
+            # 将字典转换回列表
+            all_bags = list(existing_bags.values())
 
             # 检查是否找到任何md5值
-            if not unique_md5s:
+            if not all_bags:
                 logging.warning("Warning: No bag_md5 values were found.")
-                output_json = {"bag_md5s": []}
+                print("Warning: No bag_md5 values were found.")
+                output_json = {"bags": []}
             else:
-                output_json = {"bag_md5s": sorted(list(unique_md5s))}
+                output_json = {"bags": all_bags}
 
             # 写入JSON文件
             with open(self.OUTPUT_JSON, 'w') as outfile:
@@ -94,19 +118,26 @@ class BagMD5Extractor:
             logging.info("Generated JSON content:")
             logging.info(json.dumps(output_json, indent=2))
 
-            md5_count = len(unique_md5s)
-            logging.info(f"Processing completed. The unique bag md5 values have been saved to {self.OUTPUT_JSON}")
-            logging.info(f"A total of {md5_count} unique bag md5 values were found.")
+            md5_count = len(all_bags)
+            new_md5_count = len(new_bags)
+            logging.info(f"Processing completed. The bag information has been saved to {self.OUTPUT_JSON}")
+            logging.info(f"A total of {md5_count} bags were found, including {new_md5_count} new bags.")
+            print(f"Processing completed. The bag information has been saved to {self.OUTPUT_JSON}")
+            print(f"A total of {md5_count} bags were found, including {new_md5_count} new bags.")
 
         except Exception as e:
             logging.error(f"An error occurred: {str(e)}")
             logging.error(f"Error type: {type(e).__name__}")
             logging.error(f"Error occurred in {e.__traceback__.tb_frame.f_code.co_filename}, line {e.__traceback__.tb_lineno}")
+            print(f"An error occurred: {str(e)}")
 
         finally:
             logging.info("Script execution completed")
             logging.info(f"The generated JSON file has been saved to {self.OUTPUT_JSON}")
             logging.info(f"The log file has been saved to {self.LOG_FILE}")
+            print("Script execution completed")
+            print(f"The generated JSON file has been saved to {self.OUTPUT_JSON}")
+            print(f"The log file has been saved to {self.LOG_FILE}")
 
 if __name__ == "__main__":
     try:

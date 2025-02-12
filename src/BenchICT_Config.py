@@ -67,8 +67,15 @@ class CaseProcessor:
         try:
             with open(self.paths['BAG_JSON_PATH'], 'r') as file:
                 data = json.load(file)
-                bag_md5s = data.get('bag_md5s', [])
-                bag_info = {bag_md5s[i]: float(bag_md5s[i+1]) for i in range(0, len(bag_md5s), 2)}
+                bags = data.get('bags', [])
+                bag_info = {}
+                for bag in bags:
+                    md5 = bag['md5']
+                    trigger_time = bag['trigger_time']
+                    if trigger_time != "None":
+                        bag_info[md5] = float(trigger_time)
+                    else:
+                        bag_info[md5] = None
                 return bag_info
         except Exception as e:
             error_message = f"Error reading bag.json: {str(e)}"
@@ -142,6 +149,10 @@ class CaseProcessor:
             raise ValueError(error_message)
 
         trigger_time = bag_info[bag_md5]
+        if trigger_time is None:
+            error_message = f"Error: trigger_time for bag_md5 {bag_md5} is None in bag.json for case {case_code}."
+            logging.error(error_message)
+            raise ValueError(error_message)
 
         extend_file = os.path.join(self.paths['BASE_PATH'], mfl_extend_path)
         topic_list_file = os.path.join(self.paths['BASE_PATH'], play_topic_list)
