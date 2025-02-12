@@ -53,6 +53,13 @@ class CaseProcessor:
         logging.basicConfig(filename=self.LOG_FILE, level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
+        # 添加控制台处理器
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        console.setFormatter(formatter)
+        logging.getLogger('').addHandler(console)
+
     def _setup_output_dir(self):
         os.makedirs(os.path.dirname(self.OUTPUT_JSON), exist_ok=True)
 
@@ -64,7 +71,9 @@ class CaseProcessor:
                 bag_info = {bag_md5s[i]: float(bag_md5s[i+1]) for i in range(0, len(bag_md5s), 2)}
                 return bag_info
         except Exception as e:
-            logging.error(f"Error reading bag.json: {str(e)}")
+            error_message = f"Error reading bag.json: {str(e)}"
+            logging.error(error_message)
+            print(error_message)  # 在终端显示错误信息
             raise
 
     def process_topic_list(self, topic_list_file):
@@ -73,7 +82,9 @@ class CaseProcessor:
             with open(topic_list_file, 'r') as file:
                 topics = [line.split()[1] for line in file if line.startswith('topic')]
         else:
-            logging.warning(f"Warning: topic_list file {topic_list_file} does not exist.")
+            warning_message = f"Warning: topic_list file {topic_list_file} does not exist."
+            logging.warning(warning_message)
+            print(warning_message)  # 在终端显示警告信息
         return topics
 
     def process_extend_file(self, extend_file):
@@ -89,7 +100,9 @@ class CaseProcessor:
                         topic_remaps.append({"from": topic, "to": f"/mfl_fake{topic}"})
                         forward_topics.append(topic)
         else:
-            logging.warning(f"Warning: extend file {extend_file} does not exist.")
+            warning_message = f"Warning: extend file {extend_file} does not exist."
+            logging.warning(warning_message)
+            print(warning_message)  # 在终端显示警告信息
         
         return {
             "output_topics": output_topics,
@@ -103,7 +116,9 @@ class CaseProcessor:
         logging.info(f"Case code: {case_code}")
 
         if not os.path.exists(yaml_file):
-            logging.warning(f"Warning: {yaml_file} does not exist. Skipping.")
+            warning_message = f"Warning: {yaml_file} does not exist. Skipping."
+            logging.warning(warning_message)
+            print(warning_message)  # 在终端显示警告信息
             return None
 
         with open(yaml_file, 'r') as file:
@@ -117,11 +132,13 @@ class CaseProcessor:
         if not all([mfl_case_path, mfl_extend_path, bag_md5, play_topic_list]):
             error_message = f"Error: Unable to extract required information from {yaml_file}."
             logging.error(error_message)
+            print(error_message)  # 在终端显示错误信息
             raise ValueError(error_message)
 
         if bag_md5 not in bag_info:
-            error_message = f"Error: bag_md5 {bag_md5} not found in bag.json. Unable to find trigger time for case {case_code}."
+            error_message = f"Error: bag_md5 {bag_md5} not found in bag.json for case {case_code}."
             logging.error(error_message)
+            print(error_message)  # 在终端显示错误信息
             raise ValueError(error_message)
 
         trigger_time = bag_info[bag_md5]
@@ -172,9 +189,9 @@ class CaseProcessor:
             logging.info(f"Log file saved to {self.LOG_FILE}")
 
         except Exception as e:
-            logging.error(f"An error occurred: {str(e)}")
-            logging.error(f"Error type: {type(e).__name__}")
-            logging.error(f"Error occurred in {e.__traceback__.tb_frame.f_code.co_filename}, line {e.__traceback__.tb_lineno}")
+            error_message = f"An error occurred: {str(e)}\nError type: {type(e).__name__}\nError occurred in {e.__traceback__.tb_frame.f_code.co_filename}, line {e.__traceback__.tb_lineno}"
+            logging.error(error_message)
+            print(error_message)  # 在终端显示错误信息
             sys.exit(1)  # 终止程序
 
         finally:
@@ -185,9 +202,12 @@ if __name__ == "__main__":
         processor = CaseProcessor()
         processor.process()
     except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("Please make sure the configuration file exists and is accessible.")
+        error_message = f"Error: {e}\nPlease make sure the configuration file exists and is accessible."
+        print(error_message)
+        logging.error(error_message)
         sys.exit(1)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        error_message = f"An unexpected error occurred: {e}"
+        print(error_message)
+        logging.error(error_message)
         sys.exit(1)
