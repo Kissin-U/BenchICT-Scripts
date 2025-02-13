@@ -1,3 +1,4 @@
-# 忽略log与output
-log/
-output/
+# 忽略git的路径
+output
+log
+config
