@@ -2,7 +2,7 @@
 
 ## 1.5
 - [src] extract_bag_md5s.py中支持增量修改bag.json，且bag.json预留 trigger_time 字段
-- [src] BenchICT_Config.py增加对bag.json存在md5但是不存在trigger time错误修正
+- [src] BenchICT_Config.py增加对bag.json存在md5但是不存在trigger time错误修正，且终端会直接打印日志，增加可读性
 
 ## 1.4
 
